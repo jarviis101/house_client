@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+    app:
+        build:
+            context: .
+            dockerfile: docker/nodejs/Dockerfile
+        container_name: house_client_app
+        env_file:
+            - .env
+        volumes:
+            - ./app:/app
+        depends_on:
+            - db
+        networks:
+            - house
+
+    db:
+        image: postgres:14.0
+        container_name: house_client_db
+        environment:
+            - POSTGRES_DB=${POSTGRES_DB}
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+        env_file:
+            - .env
+        volumes:
+            - db:/var/lib/postgresql/data/
+        networks:
+            - house
+
+volumes:
+    db:
+
+networks:
+    house:
+        external: true
