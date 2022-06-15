@@ -7,20 +7,24 @@ import { Prisma } from '@prisma/client';
 import { Codes } from '../prisma/codes.enum';
 import { HashRuntimeException } from '../hash/exception/runtime/hash-runtime.exception';
 import { UserRuntimeException } from './exception/runtime/user-runtime.exception';
+import { UserWithProfile } from '../prisma/types';
 
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService, private hash: HashService) {}
 
-  // async user(email: string): Promise<User | null> {
-  //   return this.prisma.user.findFirst({
-  //     where: {
-  //       profile: {
-  //         email,
-  //       },
-  //     },
-  //   });
-  // }
+  async getUserByEmail(email: string): Promise<UserWithProfile | null> {
+    return this.prisma.user.findFirst({
+      where: {
+        profile: {
+          email,
+        },
+      },
+      include: {
+        profile: true,
+      },
+    });
+  }
 
   async create(dto: RegisterRequestDTO): Promise<User | string> {
     try {

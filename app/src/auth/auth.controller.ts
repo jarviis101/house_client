@@ -1,17 +1,34 @@
-import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
+import {
+  Request,
+  Body,
+  Controller,
+  HttpStatus,
+  Post,
+  UseGuards,
+  Get,
+} from '@nestjs/common';
 import { RegisterRequestDTO } from './dto/register-request.dto';
 import { UserService } from '../user/user.service';
 import { UserRuntimeException } from '../user/exception/runtime/user-runtime.exception';
 import { UserHttpException } from '../user/exception/http/user-http.exception';
 import { HashRuntimeException } from '../hash/exception/runtime/hash-runtime.exception';
 import { HashHttpException } from '../hash/exception/http/hash-http.exception';
+import { LocalAuthGuard } from './guard/local-auth.guard';
+import { AuthService } from './auth.service';
+import { JwtAuthGuard } from './guard/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private authService: AuthService,
+  ) {}
 
-  // @Post('login')
-  // async login() {}
+  @UseGuards(LocalAuthGuard)
+  @Post('login')
+  async login(@Request() request) {
+    return await this.authService.login(request.user);
+  }
 
   @Post('register')
   async register(@Body() dto: RegisterRequestDTO) {
@@ -25,5 +42,11 @@ export class AuthController {
         throw new HashHttpException(e.message, HttpStatus.BAD_REQUEST);
       }
     }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  getProfile(@Request() req) {
+    return req.user;
   }
 }
